@@ -3,15 +3,14 @@ package user
 import "context"
 
 type User struct {
-	ID    int    `json:"id"`
-	Login string `json:"login"`
+	Login string
 	// PassHash
-	Password   string `json:"password"`
-	Name       string `json:"name"`
-	Surname    string `json:"surname"`
-	Patronymic string `json:"patronymic"`
-	Phone      string `json:"phone"`
-	Email      string `json:"email"`
+	Password   string
+	Name       string
+	Surname    string
+	Patronymic string
+	Phone      string
+	Email      string
 }
 
 func NewUser(
