@@ -45,7 +45,7 @@ type UserRepo interface {
 		patronymic string,
 		phone string,
 		email string,
-	) (*User, error)
-	GetUserByID(ctx context.Context, id int) (*User, error)
-	GetUserByEmail(ctx context.Context, email string) (*User, error)
+	) (User, error)
+	GetUserByID(ctx context.Context, id int) (User, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
 }
