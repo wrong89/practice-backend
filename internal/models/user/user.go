@@ -1,5 +1,7 @@
 package user
 
+import "context"
+
 type User struct {
 	ID    int    `json:"id"`
 	Login string `json:"login"`
@@ -35,6 +37,7 @@ func NewUser(
 // Actions with user
 type UserRepo interface {
 	CreateUser(
+		ctx context.Context,
 		login string,
 		password string,
 		name string,
@@ -43,6 +46,6 @@ type UserRepo interface {
 		phone string,
 		email string,
 	) (*User, error)
-	GetUserByID(id int) (*User, error)
-	GetUserByEmail(email string) (*User, error)
+	GetUserByID(ctx context.Context, id int) (*User, error)
+	GetUserByEmail(ctx context.Context, email string) (*User, error)
 }
