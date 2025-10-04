@@ -3,6 +3,7 @@ package user
 import "context"
 
 type User struct {
+	ID    int
 	Login string
 	// PassHash
 	Password   string
@@ -46,5 +47,5 @@ type UserRepo interface {
 		email string,
 	) (User, error)
 	GetUserByID(ctx context.Context, id int) (User, error)
-	GetUserByEmail(ctx context.Context, email string) (User, error)
+	// GetUserByEmail(ctx context.Context, email string) (User, error)
 }

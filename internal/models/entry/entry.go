@@ -6,22 +6,27 @@ import (
 )
 
 type Entry struct {
-	ID        int       `json:"id"`
-	Course    string    `json:"course"`
-	Date      time.Time `json:"date"`
-	UserID    int       `json:"user_id"`
-	PaymentID int       `json:"payment_id"`
-	Status    string    `json:"status"`
+	ID            int       `json:"id"`
+	Course        string    `json:"course"`
+	Date          time.Time `json:"date"`
+	UserID        int       `json:"user_id"`
+	PaymentMethod string    `json:"payment_method"`
+	Status        string    `json:"status"`
 }
 
-func NewEntry(course string, date time.Time, userID, paymentID int) *Entry {
+func NewEntry(course string, date time.Time, userID int, paymentMethod string) *Entry {
 	return &Entry{
-		Course:    course,
-		Date:      date,
-		UserID:    userID,
-		PaymentID: paymentID,
-		Status:    "not processed",
+		Course:        course,
+		Date:          date,
+		UserID:        userID,
+		PaymentMethod: paymentMethod,
+		Status:        "not processed",
 	}
+}
+
+func (e *Entry) MarkAsProcessed() *Entry {
+	e.Status = "processed"
+	return e
 }
 
 type EntryRepo interface {
@@ -29,8 +34,8 @@ type EntryRepo interface {
 		ctx context.Context,
 		course string,
 		date time.Time,
-		UserID int,
-		PaymentID int,
+		userID int,
+		paymentMethod string,
 	) (Entry, error)
 	GetEntryByID(ctx context.Context, id int) (Entry, error)
 	DeleteEntry(ctx context.Context, id int) error
