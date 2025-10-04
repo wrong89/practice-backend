@@ -10,7 +10,8 @@ var (
 )
 
 type List[V any] struct {
-	list   map[int]V
+	list map[int]V
+	// in use last id
 	lastID int
 }
 
@@ -19,6 +20,10 @@ func NewList[V any]() List[V] {
 		list:   make(map[int]V),
 		lastID: 0,
 	}
+}
+
+func (l *List[V]) GetLastID() int {
+	return l.lastID
 }
 
 func (l *List[V]) GetData(id int) (V, error) {
@@ -38,6 +43,15 @@ func (l *List[V]) AddData(data V) (V, error) {
 	l.list[l.lastID] = data
 
 	return data, nil
+}
+
+func (l *List[V]) UpdateData(id int, updatedData V) (V, error) {
+	if _, ok := l.list[id]; !ok {
+		return *new(V), ErrDataNotFound
+	}
+
+	l.list[id] = updatedData
+	return updatedData, nil
 }
 
 func (l *List[V]) DeleteData(id int) error {

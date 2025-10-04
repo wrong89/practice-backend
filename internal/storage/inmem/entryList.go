@@ -40,6 +40,20 @@ func (el *EntryList) GetEntryByID(ctx context.Context, id int) (entry.Entry, err
 	return e, nil
 }
 
+func (el *EntryList) MarkAsProcessed(ctx context.Context, id int) (entry.Entry, error) {
+	e, err := el.GetEntryByID(ctx, id)
+	if err != nil {
+		return entry.Entry{}, err
+	}
+
+	el.mtx.Lock()
+	defer el.mtx.Unlock()
+
+	e.MarkAsProcessed()
+
+	return el.list.UpdateData(e.ID, e)
+}
+
 func (el *EntryList) CreateEntry(
 	ctx context.Context,
 	course string,
@@ -52,6 +66,7 @@ func (el *EntryList) CreateEntry(
 	el.mtx.Lock()
 	defer el.mtx.Unlock()
 
+	newEntry.ID = el.list.GetLastID() + 1
 	e, err := el.list.AddData(*newEntry)
 	if err != nil {
 		return entry.Entry{}, err
