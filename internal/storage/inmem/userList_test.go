@@ -55,6 +55,50 @@ func TestGetUser(t *testing.T) {
 	}
 }
 
+func TestGetUserByLogin(t *testing.T) {
+	l := NewUserList()
+
+	initialLogin := "login123"
+
+	l.CreateUser(
+		t.Context(),
+		initialLogin,
+		"pass123",
+		"Ivan",
+		"Ivanov",
+		"Ivanovich",
+		"+79991234567",
+		"ivan@example.com",
+	)
+
+	testCases := []struct {
+		title   string
+		login   string
+		wantErr string
+	}{
+		{
+			title:   "happy: get existing user",
+			login:   initialLogin,
+			wantErr: "",
+		},
+		{
+			title:   "sad: get user by empty login",
+			login:   "",
+			wantErr: "user not found",
+		},
+	}
+
+	for _, tc := range testCases {
+		u, err := l.GetUserByLogin(context.Background(), tc.login)
+		if tc.wantErr != "" {
+			assert.Contains(t, err.Error(), tc.wantErr, tc.title)
+			assert.Empty(t, u, tc.title)
+		} else {
+			assert.NotEmpty(t, u, tc.title)
+		}
+	}
+}
+
 func TestDeleteUser(t *testing.T) {
 	l := NewUserList()
 

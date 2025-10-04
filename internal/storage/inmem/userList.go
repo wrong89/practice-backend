@@ -14,14 +14,16 @@ var (
 
 // Concurrent-Use
 type UserList struct {
-	list ilist.List[user.User]
-	mtx  *sync.Mutex
+	list        ilist.List[user.User]
+	loginToUser map[string]*user.User
+	mtx         *sync.Mutex
 }
 
 func NewUserList() UserList {
 	return UserList{
-		list: ilist.NewList[user.User](),
-		mtx:  new(sync.Mutex),
+		list:        ilist.NewList[user.User](),
+		loginToUser: make(map[string]*user.User),
+		mtx:         new(sync.Mutex),
 	}
 }
 
@@ -38,6 +40,17 @@ func (ul *UserList) GetUserByID(ctx context.Context, id int) (user.User, error) 
 	}
 
 	return *u, nil
+}
+
+func (ul *UserList) GetUserByLogin(ctx context.Context, login string) (user.User, error) {
+	ul.mtx.Lock()
+	defer ul.mtx.Unlock()
+
+	usr, ok := ul.loginToUser[login]
+	if !ok {
+		return user.User{}, ErrUserNotFound
+	}
+	return *usr, nil
 }
 
 func (el *UserList) CreateUser(
@@ -64,10 +77,12 @@ func (el *UserList) CreateUser(
 	defer el.mtx.Unlock()
 
 	newUser.ID = el.list.GetLen()
+
 	e, err := el.list.AddData(*newUser)
 	if err != nil {
 		return user.User{}, err
 	}
+	el.loginToUser[newUser.Login] = newUser
 
 	return e, nil
 }
