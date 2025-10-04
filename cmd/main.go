@@ -1,13 +1,19 @@
 package main
 
 import (
-	"net/http"
+	"fmt"
+	"practice-backend/internal/http"
+	"practice-backend/internal/storage/inmem"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {}
-
 func main() {
-	http.HandleFunc("/test", handler)
 
-	http.ListenAndServe(":9091", nil)
+	storage := inmem.NewStorage()
+
+	handlers := http.NewHTTPHandlers(storage, storage)
+	server := http.NewHTTPServer(*handlers)
+
+	if err := server.Start(); err != nil {
+		fmt.Println("ERR", err)
+	}
 }

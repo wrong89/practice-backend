@@ -32,7 +32,7 @@ func (h *HTTPServer) Start() error {
 func (h *HTTPServer) configureRouter() http.Handler {
 	router := mux.NewRouter()
 
-	router.Get("/hello").HandlerFunc(h.httpHandlers.HelloWorldHandler)
+	router.Path("/hello").Methods("GET").HandlerFunc(h.httpHandlers.HelloWorldHandler)
 
 	return router
 }
