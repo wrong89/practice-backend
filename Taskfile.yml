@@ -9,4 +9,8 @@ tasks:
   build:
     cmds:
       - go build -o ./build ./cmd/main.go 
+  test-all:
+    cmds:
+      - go test -v ./...
+  
 

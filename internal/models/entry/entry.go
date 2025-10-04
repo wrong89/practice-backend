@@ -6,12 +6,12 @@ import (
 )
 
 type Entry struct {
-	ID            int       `json:"id"`
-	Course        string    `json:"course"`
-	Date          time.Time `json:"date"`
-	UserID        int       `json:"user_id"`
-	PaymentMethod string    `json:"payment_method"`
-	Status        string    `json:"status"`
+	ID            int
+	Course        string
+	Date          time.Time
+	UserID        int
+	PaymentMethod string
+	Status        string
 }
 
 func NewEntry(course string, date time.Time, userID int, paymentMethod string) *Entry {
@@ -38,5 +38,6 @@ type EntryRepo interface {
 		paymentMethod string,
 	) (Entry, error)
 	GetEntryByID(ctx context.Context, id int) (Entry, error)
+	GetEntries(ctx context.Context) ([]Entry, error)
 	DeleteEntry(ctx context.Context, id int) error
 }
