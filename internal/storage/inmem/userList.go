@@ -9,7 +9,8 @@ import (
 )
 
 var (
-	ErrUserNotFound = errors.New("user not found")
+	ErrUserNotFound     = errors.New("user not found")
+	ErrUserAlreadyExist = errors.New("user already exist")
 )
 
 // Concurrent-Use
@@ -72,6 +73,10 @@ func (el *UserList) CreateUser(
 		phone,
 		email,
 	)
+
+	if _, err := el.GetUserByLogin(ctx, login); err == nil {
+		return user.User{}, ErrUserAlreadyExist
+	}
 
 	el.mtx.Lock()
 	defer el.mtx.Unlock()

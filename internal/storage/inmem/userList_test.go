@@ -55,6 +55,45 @@ func TestGetUser(t *testing.T) {
 	}
 }
 
+func TestCreateUser(t *testing.T) {
+	testCases := []struct {
+		title     string
+		login     string
+		userCount int
+		wantErrs  []string
+	}{
+		{
+			title:     "happy: create one user",
+			login:     "one",
+			userCount: 1,
+			wantErrs:  []string{""},
+		},
+		{
+			title:     "sad: create users which login is equal",
+			login:     "some",
+			userCount: 2,
+			wantErrs:  []string{"", "user already exist"},
+		},
+	}
+
+	for _, tc := range testCases {
+		l := NewUserList()
+
+		for i := range tc.userCount {
+			u, err := l.CreateUser(t.Context(), tc.login, "", "", "", "", "", "123")
+			if tc.wantErrs[i] != "" {
+				assert.Contains(t, err.Error(), tc.wantErrs[i], tc.title)
+				assert.Empty(t, u, tc.title)
+			} else {
+				assert.NotEmpty(t, u, tc.title)
+				user, err := l.GetUserByLogin(t.Context(), tc.login)
+				assert.Nil(t, err, tc.title)
+				assert.Equal(t, u, user)
+			}
+		}
+	}
+}
+
 func TestGetUserByLogin(t *testing.T) {
 	l := NewUserList()
 
