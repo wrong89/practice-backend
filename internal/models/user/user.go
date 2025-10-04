@@ -12,6 +12,7 @@ type User struct {
 	Patronymic string
 	Phone      string
 	Email      string
+	Role       string
 }
 
 func NewUser(

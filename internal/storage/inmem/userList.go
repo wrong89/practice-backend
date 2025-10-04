@@ -92,6 +92,29 @@ func (el *UserList) CreateUser(
 	return e, nil
 }
 
+func (el *UserList) CreateAdmin(
+	ctx context.Context,
+	login string,
+	password string,
+) (user.User, error) {
+	var newUser user.User
+	newUser.Login = login
+	newUser.Password = password
+
+	el.mtx.Lock()
+	defer el.mtx.Unlock()
+
+	newUser.ID = el.list.GetLen()
+
+	e, err := el.list.AddData(newUser)
+	if err != nil {
+		return user.User{}, err
+	}
+	el.loginToUser[newUser.Login] = &newUser
+
+	return e, nil
+}
+
 func (ul *UserList) DeleteUser(ctx context.Context, id int) error {
 	ul.mtx.Lock()
 	defer ul.mtx.Unlock()
