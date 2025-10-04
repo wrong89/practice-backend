@@ -26,18 +26,22 @@ func NewEntryList() EntryList {
 	}
 }
 
+func (el *EntryList) GetEntries(ctx context.Context) ([]entry.Entry, error) {
+	return el.list.GetData(), nil
+}
+
 func (el *EntryList) GetEntryByID(ctx context.Context, id int) (entry.Entry, error) {
 	el.mtx.Lock()
 	defer el.mtx.Unlock()
 
-	e, err := el.list.GetData(id)
+	e, err := el.list.GetDataByID(id)
 	if err != nil {
 		if errors.Is(err, ilist.ErrDataNotFound) {
 			return entry.Entry{}, ErrEntryNotFound
 		}
 		return entry.Entry{}, err
 	}
-	return e, nil
+	return *e, nil
 }
 
 func (el *EntryList) MarkAsProcessed(ctx context.Context, id int) (entry.Entry, error) {
@@ -51,7 +55,7 @@ func (el *EntryList) MarkAsProcessed(ctx context.Context, id int) (entry.Entry, 
 
 	e.MarkAsProcessed()
 
-	return el.list.UpdateData(e.ID, e)
+	return el.list.UpdateData(id, e)
 }
 
 func (el *EntryList) CreateEntry(
@@ -66,7 +70,7 @@ func (el *EntryList) CreateEntry(
 	el.mtx.Lock()
 	defer el.mtx.Unlock()
 
-	newEntry.ID = el.list.GetLastID() + 1
+	newEntry.ID = el.list.GetLen()
 	e, err := el.list.AddData(*newEntry)
 	if err != nil {
 		return entry.Entry{}, err
@@ -79,12 +83,7 @@ func (el *EntryList) DeleteEntry(ctx context.Context, id int) error {
 	el.mtx.Lock()
 	defer el.mtx.Unlock()
 
-	e, err := el.list.GetData(id)
-	if err != nil {
-		return err
-	}
-
-	if err := el.list.DeleteData(e.ID); err != nil {
+	if err := el.list.DeleteData(id); err != nil {
 		if errors.Is(err, ilist.ErrDataNotFound) {
 			return ErrEntryNotFound
 		}

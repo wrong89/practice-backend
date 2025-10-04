@@ -29,7 +29,7 @@ func (ul *UserList) GetUserByID(ctx context.Context, id int) (user.User, error) 
 	ul.mtx.Lock()
 	defer ul.mtx.Unlock()
 
-	u, err := ul.list.GetData(id)
+	u, err := ul.list.GetDataByID(id)
 	if err != nil {
 		if errors.Is(err, ilist.ErrDataNotFound) {
 			return user.User{}, ErrUserNotFound
@@ -37,7 +37,7 @@ func (ul *UserList) GetUserByID(ctx context.Context, id int) (user.User, error) 
 		return user.User{}, err
 	}
 
-	return u, nil
+	return *u, nil
 }
 
 func (el *UserList) CreateUser(
@@ -63,6 +63,7 @@ func (el *UserList) CreateUser(
 	el.mtx.Lock()
 	defer el.mtx.Unlock()
 
+	newUser.ID = el.list.GetLen()
 	e, err := el.list.AddData(*newUser)
 	if err != nil {
 		return user.User{}, err
@@ -75,12 +76,7 @@ func (ul *UserList) DeleteUser(ctx context.Context, id int) error {
 	ul.mtx.Lock()
 	defer ul.mtx.Unlock()
 
-	u, err := ul.list.GetData(id)
-	if err != nil {
-		return err
-	}
-
-	if err := ul.list.DeleteData(u.ID); err != nil {
+	if err := ul.list.DeleteData(id); err != nil {
 		if errors.Is(err, ilist.ErrDataNotFound) {
 			return ErrUserNotFound
 		}
