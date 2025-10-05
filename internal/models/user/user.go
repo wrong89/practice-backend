@@ -33,6 +33,7 @@ func NewUser(
 		Patronymic: patronymic,
 		Phone:      phone,
 		Email:      email,
+		IsAdmin:    isAdmin,
 	}
 }
 
