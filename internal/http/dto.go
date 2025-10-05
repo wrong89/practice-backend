@@ -9,11 +9,20 @@ import (
 )
 
 var (
+	ErrInvalidOrEmptyID = errors.New("invalid or empty id")
+	ErrInvalidStatus    = errors.New("invalid status")
+
 	ErrLoginIsEmpty      = errors.New("login is empty")
 	ErrPasswordIsEmpty   = errors.New("password is empty")
 	ErrNameIsEmpty       = errors.New("name is empty")
 	ErrSurnameIsEmpty    = errors.New("surname is empty")
 	ErrPatronymicIsEmpty = errors.New("patronymic is empty")
+
+	ErrCourseIsEmpty        = errors.New("course is empty")
+	ErrDateIsEmpty          = errors.New("date is empty")
+	ErrInvalidDate          = errors.New("date is invalid")
+	ErrPaymentMethodIsEmpty = errors.New("payment_method is empty")
+	ErrInvalidOrEmptyUserID = errors.New("user_id invalid or empty")
 )
 
 type RegisterUserDTO struct {
@@ -63,6 +72,54 @@ func (r *LoginUserDTO) Validate() error {
 	}
 	if r.Password == "" {
 		return ErrPasswordIsEmpty
+	}
+
+	return nil
+}
+
+type CreateEntryDTO struct {
+	Course        string `json:"course"`
+	Date          string `json:"date"`
+	UserID        int    `json:"user_id"`
+	PaymentMethod string `json:"payment_method"`
+}
+
+func (c *CreateEntryDTO) Validate() error {
+	if c.Course == "" {
+		return ErrCourseIsEmpty
+	}
+
+	if c.Date == "" {
+		return ErrDateIsEmpty
+	}
+
+	// "2025-10-05" valid
+	if _, err := time.Parse(time.DateOnly, c.Date); err != nil {
+		return ErrInvalidDate
+	}
+
+	if c.PaymentMethod == "" {
+		return ErrPaymentMethodIsEmpty
+	}
+
+	if c.UserID <= 0 {
+		return ErrInvalidOrEmptyUserID
+	}
+
+	return nil
+}
+
+type UpdateEntryDTO struct {
+	ID     int    `json:"id"`
+	Status string `json:"status"`
+}
+
+func (u *UpdateEntryDTO) Validate() error {
+	if u.ID <= 0 {
+		return ErrInvalidOrEmptyID
+	}
+	if !(u.Status == "not processed" || u.Status == "processed") {
+		return ErrInvalidStatus
 	}
 
 	return nil

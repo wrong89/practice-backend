@@ -44,7 +44,7 @@ func (el *EntryList) GetEntryByID(ctx context.Context, id int) (entry.Entry, err
 	return *e, nil
 }
 
-func (el *EntryList) UpdateEntryStatus(ctx context.Context, id int, status string) (entry.Entry, error) {
+func (el *EntryList) UpdateStatusEntry(ctx context.Context, id int, status string) (entry.Entry, error) {
 	e, err := el.GetEntryByID(ctx, id)
 	if err != nil {
 		return entry.Entry{}, err

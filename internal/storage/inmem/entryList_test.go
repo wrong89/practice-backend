@@ -135,7 +135,7 @@ func TestUpdateEntryStatus(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		markedEntry, err := l.UpdateEntryStatus(t.Context(), tc.id, tc.status)
+		markedEntry, err := l.UpdateStatusEntry(t.Context(), tc.id, tc.status)
 		if tc.wantErr != "" {
 			assert.Contains(t, err.Error(), tc.wantErr, tc.title)
 			continue

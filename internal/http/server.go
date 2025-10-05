@@ -49,16 +49,10 @@ func (h *HTTPServer) configureRouter() http.Handler {
 		r.Post("/user/register", h.httpHandlers.RegisterHandler)
 		r.Post("/user/login", h.httpHandlers.LoginHandler)
 
-		r.With(AuthMiddleware).Get("/test", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("Hello FROM PRIVATE ROUTE"))
-		})
+		r.With(AuthMiddleware).Post("/entry", h.httpHandlers.CreateEntryHandler)
+		r.With(AuthMiddleware).Get("/entry", h.httpHandlers.GetEntriesHandler)
+		r.With(AuthMiddleware).Patch("/entry", h.httpHandlers.UpdateEntryHandler)
 	})
-
-	// router.Use(LoggingMiddleware)
-	// router.Use(AuthMiddleware)
-
-	// router.Path("/user/register").Methods("POST").HandlerFunc(h.httpHandlers.RegisterHandler)
-	// router.Path("/user/login").Methods("POST").HandlerFunc(h.httpHandlers.LoginHandler)
 
 	return router
 }

@@ -40,4 +40,5 @@ type EntryRepo interface {
 	GetEntryByID(ctx context.Context, id int) (Entry, error)
 	GetEntries(ctx context.Context) ([]Entry, error)
 	DeleteEntry(ctx context.Context, id int) error
+	UpdateStatusEntry(ctx context.Context, id int, status string) (Entry, error)
 }

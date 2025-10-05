@@ -8,6 +8,7 @@ import (
 	"practice-backend/internal/models/entry"
 	"practice-backend/internal/models/user"
 	"practice-backend/internal/storage/inmem"
+	"time"
 )
 
 type Auth interface {
@@ -111,7 +112,7 @@ method:  POST
 info:    JSON in HTTP request body
 
 succeed:
-  - status code: 200 Created
+  - status code: 200 OK
   - response body: JSON with token
 failed:
   - status code: 400, 500
@@ -144,6 +145,152 @@ func (h *HTTPHandlers) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Token string `json:"token"`
 	}{
 		Token: token,
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp)
+}
+
+/*
+pattern: /entry
+method:  POST
+info:    JSON of created entry
+
+succeed:
+  - status code: 201 Created
+  - response body: JSON with token
+failed:
+  - status code: 400, 500
+  - response body: JSON with error + time
+*/
+
+func (h *HTTPHandlers) CreateEntryHandler(w http.ResponseWriter, r *http.Request) {
+	var createEntryDTO CreateEntryDTO
+
+	if err := json.NewDecoder(r.Body).Decode(&createEntryDTO); err != nil {
+		errDTO := NewErrorDTO(err)
+		http.Error(w, errDTO.String(), http.StatusBadRequest)
+		return
+	}
+
+	if err := createEntryDTO.Validate(); err != nil {
+		errDTO := NewErrorDTO(err)
+		http.Error(w, errDTO.String(), http.StatusBadRequest)
+		return
+	}
+
+	// skip the err, time is valid
+	dateTime, _ := time.Parse(time.DateOnly, createEntryDTO.Date)
+
+	entry, err := h.entryRepo.CreateEntry(
+		r.Context(),
+		createEntryDTO.Course,
+		dateTime,
+		createEntryDTO.UserID,
+		createEntryDTO.PaymentMethod,
+	)
+	if err != nil {
+		errDTO := NewErrorDTO(err)
+		http.Error(w, errDTO.String(), http.StatusInternalServerError)
+		return
+	}
+
+	resp := struct {
+		Course        string `json:"course"`
+		Date          string `json:"date"`
+		UserID        int    `json:"user_id"`
+		PaymentMethod string `json:"payment_method"`
+		Status        string `json:"status"`
+	}{
+		Course:        entry.Course,
+		Date:          createEntryDTO.Date,
+		UserID:        entry.UserID,
+		PaymentMethod: entry.PaymentMethod,
+		Status:        entry.Status,
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(resp)
+}
+
+/*
+pattern: /entry
+method:  GET
+info:    -
+
+succeed:
+  - status code: 200 OK
+  - response body: JSON with entries
+failed:
+  - status code: 400, 500
+  - response body: JSON with error + time
+*/
+
+func (h *HTTPHandlers) GetEntriesHandler(w http.ResponseWriter, r *http.Request) {
+	entries, err := h.entryRepo.GetEntries(r.Context())
+	if err != nil {
+		errDTO := NewErrorDTO(err)
+		http.Error(w, errDTO.String(), http.StatusInternalServerError)
+		return
+	}
+
+	resp := struct {
+		Entries []entry.Entry `json:"entries"`
+	}{
+		Entries: entries,
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp)
+}
+
+/*
+pattern: /entry
+method:  PATCH
+info:    JSON with entry id and status
+
+succeed:
+  - status code: 200 OK
+  - response body: JSON with entries
+failed:
+  - status code: 400, 500
+  - response body: JSON with error + time
+*/
+
+func (h *HTTPHandlers) UpdateEntryHandler(w http.ResponseWriter, r *http.Request) {
+	var updateEntryDTO UpdateEntryDTO
+
+	if err := json.NewDecoder(r.Body).Decode(&updateEntryDTO); err != nil {
+		errDTO := NewErrorDTO(err)
+		http.Error(w, errDTO.String(), http.StatusBadRequest)
+		return
+	}
+
+	if err := updateEntryDTO.Validate(); err != nil {
+		errDTO := NewErrorDTO(err)
+		http.Error(w, errDTO.String(), http.StatusBadRequest)
+		return
+	}
+
+	entry, err := h.entryRepo.UpdateStatusEntry(r.Context(), updateEntryDTO.ID, updateEntryDTO.Status)
+	if err != nil {
+		errDTO := NewErrorDTO(err)
+		http.Error(w, errDTO.String(), http.StatusBadRequest)
+		return
+	}
+
+	resp := struct {
+		Course        string `json:"course"`
+		Date          string `json:"date"`
+		UserID        int    `json:"user_id"`
+		PaymentMethod string `json:"payment_method"`
+		Status        string `json:"status"`
+	}{
+		Course:        entry.Course,
+		Date:          entry.Date.Format(time.DateOnly),
+		UserID:        entry.UserID,
+		PaymentMethod: entry.PaymentMethod,
+		Status:        entry.Status,
 	}
 
 	w.WriteHeader(http.StatusOK)
