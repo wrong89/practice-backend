@@ -97,7 +97,7 @@ func TestDeleteEntry(t *testing.T) {
 	}
 }
 
-func TestMarkAsProcessedEntry(t *testing.T) {
+func TestUpdateEntryStatus(t *testing.T) {
 	l := NewEntryList()
 
 	initialEntry := entry.NewEntry(
@@ -111,36 +111,40 @@ func TestMarkAsProcessedEntry(t *testing.T) {
 	testCases := []struct {
 		title   string
 		id      int
+		status  string
 		wantErr string
 	}{
 		{
 			title:   "happy: mark existing data",
 			id:      0,
+			status:  "processed",
 			wantErr: "",
 		},
 		{
 			title:   "sad: delete data by invalid id",
 			id:      -1,
+			status:  "processed",
 			wantErr: "invalid id",
 		},
 		{
 			title:   "sad: delete not existing data",
 			id:      10,
+			status:  "processed",
 			wantErr: "entry not found",
 		},
 	}
 
 	for _, tc := range testCases {
-		markedEntry, err := l.MarkAsProcessed(context.TODO(), tc.id)
+		markedEntry, err := l.UpdateEntryStatus(t.Context(), tc.id, tc.status)
 		if tc.wantErr != "" {
-			assert.Contains(t, err.Error(), tc.wantErr)
+			assert.Contains(t, err.Error(), tc.wantErr, tc.title)
 			continue
 		}
 		assert.Nil(t, err)
 
 		if assert.Equal(t, "processed", markedEntry.Status) {
 			entry, _ := l.GetEntryByID(context.TODO(), tc.id)
-			assert.Equal(t, "processed", entry.Status)
+			assert.Equal(t, "processed", entry.Status, tc.title)
 		}
 	}
 }

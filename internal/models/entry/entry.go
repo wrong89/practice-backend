@@ -24,8 +24,8 @@ func NewEntry(course string, date time.Time, userID int, paymentMethod string) *
 	}
 }
 
-func (e *Entry) MarkAsProcessed() *Entry {
-	e.Status = "processed"
+func (e *Entry) UpdateStatus(status string) *Entry {
+	e.Status = status
 	return e
 }
 
