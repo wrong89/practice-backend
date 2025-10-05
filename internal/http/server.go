@@ -41,9 +41,10 @@ func (h *HTTPServer) configureRouter() http.Handler {
 
 	router.Route("/api", func(r chi.Router) {
 		r.Use(LoggingMiddleware)
+		r.Use(CorsMiddleware)
 
-		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("Hello World PUBLIC"))
+		r.Get("/test", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("HelloWorld"))
 		})
 
 		r.Post("/user/register", h.httpHandlers.RegisterHandler)
