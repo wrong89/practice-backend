@@ -8,10 +8,6 @@ import (
 	"time"
 )
 
-type HelloWorldDTO struct {
-	Title string `json:"title"`
-}
-
 var (
 	ErrLoginIsEmpty      = errors.New("login is empty")
 	ErrPasswordIsEmpty   = errors.New("password is empty")
@@ -51,6 +47,22 @@ func (r *RegisterUserDTO) Validate() error {
 	}
 	if r.Surname == "" {
 		return ErrSurnameIsEmpty
+	}
+
+	return nil
+}
+
+type LoginUserDTO struct {
+	Login    string `json:"login"`
+	Password string `json:"password"`
+}
+
+func (r *LoginUserDTO) Validate() error {
+	if r.Login == "" {
+		return ErrLoginIsEmpty
+	}
+	if r.Password == "" {
+		return ErrPasswordIsEmpty
 	}
 
 	return nil

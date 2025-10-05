@@ -44,19 +44,7 @@ func NewHTTPHandlers(
 	}
 }
 
-func (h *HTTPHandlers) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
-	var helloWorldDTO HelloWorldDTO
-
-	if err := json.NewDecoder(r.Body).Decode(&helloWorldDTO); err != nil {
-		errDTO := NewErrorDTO(err)
-		http.Error(w, errDTO.String(), http.StatusBadRequest)
-		return
-	}
-
-	w.Write([]byte("HelloWorld for:\t" + helloWorldDTO.Title))
-}
-
-/* contract example
+/*
 pattern: /user/register
 method:  POST
 info:    JSON in HTTP request body
@@ -69,7 +57,7 @@ failed:
   - response body: JSON with error + time
 */
 
-func (h *HTTPHandlers) RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandlers) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	var registerDTO RegisterUserDTO
 
 	if err := json.NewDecoder(r.Body).Decode(&registerDTO); err != nil {
@@ -114,5 +102,50 @@ func (h *HTTPHandlers) RegisterUserHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(resp)
+}
+
+/*
+pattern: /user/login
+method:  POST
+info:    JSON in HTTP request body
+
+succeed:
+  - status code: 200 Created
+  - response body: JSON with token
+failed:
+  - status code: 400, 500
+  - response body: JSON with error + time
+*/
+
+func (h *HTTPHandlers) LoginHandler(w http.ResponseWriter, r *http.Request) {
+	var loginDTO LoginUserDTO
+
+	if err := json.NewDecoder(r.Body).Decode(&loginDTO); err != nil {
+		errDTO := NewErrorDTO(err)
+		http.Error(w, errDTO.String(), http.StatusBadRequest)
+		return
+	}
+
+	if err := loginDTO.Validate(); err != nil {
+		errDTO := NewErrorDTO(err)
+		http.Error(w, errDTO.String(), http.StatusBadRequest)
+		return
+	}
+
+	token, err := h.authService.Login(r.Context(), loginDTO.Login, loginDTO.Password)
+	if err != nil {
+		errDTO := NewErrorDTO(err)
+		http.Error(w, errDTO.String(), http.StatusBadRequest)
+		return
+	}
+
+	resp := struct {
+		Token string `json:"token"`
+	}{
+		Token: token,
+	}
+
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
 }

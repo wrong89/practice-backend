@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 )
 
 type HTTPServer struct {
@@ -30,10 +30,28 @@ func (h *HTTPServer) Start() error {
 }
 
 func (h *HTTPServer) configureRouter() http.Handler {
-	router := mux.NewRouter()
+	router := chi.NewRouter()
 
-	router.Path("/hello").Methods("GET").HandlerFunc(h.httpHandlers.HelloWorldHandler)
-	router.Path("/user/register").Methods("POST").HandlerFunc(h.httpHandlers.RegisterUserHandler)
+	router.Route("/api", func(r chi.Router) {
+		r.Use(LoggingMiddleware)
+
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("Hello World PUBLIC"))
+		})
+
+		r.Post("/user/register", h.httpHandlers.RegisterHandler)
+		r.Post("/user/login", h.httpHandlers.LoginHandler)
+
+		r.With(AuthMiddleware).Get("/test", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("Hello FROM PRIVATE ROUTE"))
+		})
+	})
+
+	// router.Use(LoggingMiddleware)
+	// router.Use(AuthMiddleware)
+
+	// router.Path("/user/register").Methods("POST").HandlerFunc(h.httpHandlers.RegisterHandler)
+	// router.Path("/user/login").Methods("POST").HandlerFunc(h.httpHandlers.LoginHandler)
 
 	return router
 }
