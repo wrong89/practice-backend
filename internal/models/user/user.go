@@ -12,7 +12,7 @@ type User struct {
 	Patronymic string
 	Phone      string
 	Email      string
-	Role       string
+	IsAdmin    bool
 }
 
 func NewUser(
@@ -23,6 +23,7 @@ func NewUser(
 	patronymic,
 	phone,
 	email string,
+	isAdmin bool,
 ) *User {
 	return &User{
 		Login:      login,
@@ -46,6 +47,7 @@ type UserRepo interface {
 		patronymic string,
 		phone string,
 		email string,
+		isAdmin bool,
 	) (User, error)
 	GetUserByID(ctx context.Context, id int) (User, error)
 	GetUserByLogin(ctx context.Context, login string) (User, error)

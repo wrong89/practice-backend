@@ -33,6 +33,7 @@ func (h *HTTPServer) configureRouter() http.Handler {
 	router := mux.NewRouter()
 
 	router.Path("/hello").Methods("GET").HandlerFunc(h.httpHandlers.HelloWorldHandler)
+	router.Path("/user/register").Methods("POST").HandlerFunc(h.httpHandlers.RegisterUserHandler)
 
 	return router
 }

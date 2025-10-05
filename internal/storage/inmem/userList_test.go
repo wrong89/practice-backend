@@ -19,6 +19,7 @@ func TestGetUser(t *testing.T) {
 		"Ivanovich",
 		"+79991234567",
 		"ivan@example.com",
+		false,
 	)
 	l.list.AddData(*initialUser)
 
@@ -80,7 +81,7 @@ func TestCreateUser(t *testing.T) {
 		l := NewUserList()
 
 		for i := range tc.userCount {
-			u, err := l.CreateUser(t.Context(), tc.login, "", "", "", "", "", "123")
+			u, err := l.CreateUser(t.Context(), tc.login, "", "", "", "", "", "123", false)
 			if tc.wantErrs[i] != "" {
 				assert.Contains(t, err.Error(), tc.wantErrs[i], tc.title)
 				assert.Empty(t, u, tc.title)
@@ -108,6 +109,7 @@ func TestGetUserByLogin(t *testing.T) {
 		"Ivanovich",
 		"+79991234567",
 		"ivan@example.com",
+		false,
 	)
 
 	testCases := []struct {
@@ -149,6 +151,7 @@ func TestDeleteUser(t *testing.T) {
 		"Ivanovich",
 		"+79991234567",
 		"ivan@example.com",
+		false,
 	)
 	l.list.AddData(*initialUser)
 

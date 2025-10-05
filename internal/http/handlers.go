@@ -3,10 +3,11 @@ package http
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"practice-backend/internal/models/entry"
 	"practice-backend/internal/models/user"
-	"practice-backend/internal/services/auth"
+	"practice-backend/internal/storage/inmem"
 )
 
 type Auth interface {
@@ -17,19 +18,24 @@ type Auth interface {
 	) (token string, err error)
 	Register(
 		ctx context.Context,
-	) (userID int64, err error)
+		user user.User,
+	) (userID int, err error)
+	IsAdmin(
+		ctx context.Context,
+		userID int,
+	) (bool, error)
 }
 
 type HTTPHandlers struct {
 	entryRepo   entry.EntryRepo
 	userRepo    user.UserRepo
-	authService auth.Auth
+	authService Auth
 }
 
 func NewHTTPHandlers(
 	entryRepo entry.EntryRepo,
 	userRepo user.UserRepo,
-	authService auth.Auth,
+	authService Auth,
 ) *HTTPHandlers {
 	return &HTTPHandlers{
 		entryRepo:   entryRepo,
@@ -64,13 +70,49 @@ failed:
 */
 
 func (h *HTTPHandlers) RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
-	var helloWorldDTO HelloWorldDTO
+	var registerDTO RegisterUserDTO
 
-	if err := json.NewDecoder(r.Body).Decode(&helloWorldDTO); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&registerDTO); err != nil {
 		errDTO := NewErrorDTO(err)
 		http.Error(w, errDTO.String(), http.StatusBadRequest)
 		return
 	}
 
-	w.Write([]byte("HelloWorld for:\t" + helloWorldDTO.Title))
+	if err := registerDTO.Validate(); err != nil {
+		errDTO := NewErrorDTO(err)
+		http.Error(w, errDTO.String(), http.StatusBadRequest)
+		return
+	}
+
+	user := user.NewUser(
+		registerDTO.Login,
+		registerDTO.Password,
+		registerDTO.Name,
+		registerDTO.Surname,
+		registerDTO.Patronymic,
+		registerDTO.Phone,
+		registerDTO.Email,
+		false,
+	)
+
+	userID, err := h.authService.Register(r.Context(), *user)
+	if err != nil {
+		errDTO := NewErrorDTO(err)
+		if errors.Is(err, inmem.ErrUserAlreadyExist) {
+			http.Error(w, errDTO.String(), http.StatusConflict)
+			return
+		}
+
+		http.Error(w, errDTO.String(), http.StatusInternalServerError)
+		return
+	}
+
+	resp := struct {
+		ID int `json:"id"`
+	}{
+		ID: userID,
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(resp)
 }

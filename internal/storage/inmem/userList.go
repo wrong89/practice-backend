@@ -63,6 +63,7 @@ func (el *UserList) CreateUser(
 	patronymic string,
 	phone string,
 	email string,
+	isAdmin bool,
 ) (user.User, error) {
 	newUser := user.NewUser(
 		login,
@@ -72,6 +73,7 @@ func (el *UserList) CreateUser(
 		patronymic,
 		phone,
 		email,
+		isAdmin,
 	)
 
 	if _, err := el.GetUserByLogin(ctx, login); err == nil {
@@ -88,29 +90,6 @@ func (el *UserList) CreateUser(
 		return user.User{}, err
 	}
 	el.loginToUser[newUser.Login] = newUser
-
-	return e, nil
-}
-
-func (el *UserList) CreateAdmin(
-	ctx context.Context,
-	login string,
-	password string,
-) (user.User, error) {
-	var newUser user.User
-	newUser.Login = login
-	newUser.Password = password
-
-	el.mtx.Lock()
-	defer el.mtx.Unlock()
-
-	newUser.ID = el.list.GetLen()
-
-	e, err := el.list.AddData(newUser)
-	if err != nil {
-		return user.User{}, err
-	}
-	el.loginToUser[newUser.Login] = &newUser
 
 	return e, nil
 }

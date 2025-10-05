@@ -10,11 +10,11 @@ import (
 
 func main() {
 	storage := inmem.NewStorage()
-	storage.CreateAdmin(context.TODO(), "Admin", "KorokNET")
+	storage.CreateUser(context.Background(), "Admin", "KorokNET", "", "", "", "", "", true)
 
 	authService := auth.NewAuth(storage)
 
-	handlers := http.NewHTTPHandlers(storage, storage, *authService)
+	handlers := http.NewHTTPHandlers(storage, storage, authService)
 	server := http.NewHTTPServer(*handlers)
 
 	if err := server.Start(); err != nil {
