@@ -86,3 +86,14 @@ func (a *Auth) IsAdmin(
 	}
 	return false, nil
 }
+
+func (a *Auth) CreateAdminUser(ctx context.Context, login string, password string) error {
+	var admin user.User
+	admin.IsAdmin = true
+	admin.Login = login
+	admin.Password = password
+
+	_, err := a.Register(ctx, admin)
+
+	return err
+}

@@ -11,9 +11,10 @@ import (
 
 func main() {
 	storage := inmem.NewStorage()
-	storage.CreateUser(context.Background(), "Admin", "KorokNET", "", "", "", "", "", true)
 
 	authService := auth.NewAuth(storage)
+
+	authService.CreateAdminUser(context.TODO(), "Admin", "KorokNET")
 
 	handlers := http.NewHTTPHandlers(storage, storage, authService)
 	server := http.NewHTTPServer(*handlers)
