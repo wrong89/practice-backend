@@ -9,15 +9,19 @@ import (
 	"practice-backend/internal/storage/inmem"
 )
 
+var (
+	ServerPort = 9091
+	ServerHost = "localhost"
+)
+
 func main() {
 	storage := inmem.NewStorage()
 
 	authService := auth.NewAuth(storage)
-
 	authService.CreateAdminUser(context.TODO(), "Admin", "KorokNET")
 
 	handlers := http.NewHTTPHandlers(storage, storage, authService)
-	server := http.NewHTTPServer(*handlers)
+	server := http.NewHTTPServer(*handlers, ServerPort, ServerHost)
 
 	log.Printf("Starting server %s:%d\n", "localhost", 9091)
 

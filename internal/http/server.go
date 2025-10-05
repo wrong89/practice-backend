@@ -2,6 +2,7 @@ package http
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -9,18 +10,24 @@ import (
 
 type HTTPServer struct {
 	httpHandlers HTTPHandlers
+	port         int
+	host         string
 }
 
-func NewHTTPServer(httpHandlers HTTPHandlers) *HTTPServer {
+func NewHTTPServer(httpHandlers HTTPHandlers, port int, host string) *HTTPServer {
 	return &HTTPServer{
 		httpHandlers: httpHandlers,
+		port:         port,
+		host:         host,
 	}
 }
 
 func (h *HTTPServer) Start() error {
 	router := h.configureRouter()
 
-	if err := http.ListenAndServe(":9091", router); err != nil {
+	socket := fmt.Sprintf("%s:%d", h.host, h.port)
+
+	if err := http.ListenAndServe(socket, router); err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {
 			return err
 		}
