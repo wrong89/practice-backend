@@ -8,6 +8,7 @@ import (
 	"practice-backend/internal/models/entry"
 	"practice-backend/internal/models/user"
 	"practice-backend/internal/storage/inmem"
+	"strconv"
 	"time"
 )
 
@@ -214,9 +215,9 @@ func (h *HTTPHandlers) CreateEntryHandler(w http.ResponseWriter, r *http.Request
 }
 
 /*
-pattern: /entry
+pattern: /entry?user_id=x
 method:  GET
-info:    -
+info:    query params
 
 succeed:
   - status code: 200 OK
@@ -232,6 +233,21 @@ func (h *HTTPHandlers) GetEntriesHandler(w http.ResponseWriter, r *http.Request)
 		errDTO := NewErrorDTO(err)
 		http.Error(w, errDTO.String(), http.StatusInternalServerError)
 		return
+	}
+
+	userIDStr := r.URL.Query().Get("user_id")
+	if len(userIDStr) > 0 {
+		userID, err := strconv.Atoi(userIDStr)
+		if err == nil {
+			var filteredEntries []entry.Entry
+
+			for _, entry := range entries {
+				if entry.UserID == userID {
+					filteredEntries = append(filteredEntries, entry)
+				}
+			}
+			entries = filteredEntries
+		}
 	}
 
 	resp := struct {
@@ -258,6 +274,59 @@ failed:
 */
 
 func (h *HTTPHandlers) UpdateEntryHandler(w http.ResponseWriter, r *http.Request) {
+	var updateEntryDTO UpdateEntryDTO
+
+	if err := json.NewDecoder(r.Body).Decode(&updateEntryDTO); err != nil {
+		errDTO := NewErrorDTO(err)
+		http.Error(w, errDTO.String(), http.StatusBadRequest)
+		return
+	}
+
+	if err := updateEntryDTO.Validate(); err != nil {
+		errDTO := NewErrorDTO(err)
+		http.Error(w, errDTO.String(), http.StatusBadRequest)
+		return
+	}
+
+	entry, err := h.entryRepo.UpdateStatusEntry(r.Context(), updateEntryDTO.ID, updateEntryDTO.Status)
+	if err != nil {
+		errDTO := NewErrorDTO(err)
+		http.Error(w, errDTO.String(), http.StatusBadRequest)
+		return
+	}
+
+	resp := struct {
+		Course        string `json:"course"`
+		Date          string `json:"date"`
+		UserID        int    `json:"user_id"`
+		PaymentMethod string `json:"payment_method"`
+		Status        string `json:"status"`
+	}{
+		Course:        entry.Course,
+		Date:          entry.Date.Format(time.DateOnly),
+		UserID:        entry.UserID,
+		PaymentMethod: entry.PaymentMethod,
+		Status:        entry.Status,
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp)
+}
+
+/*
+pattern: /entry/{user_id}
+method:  GET
+info:    in pattern
+
+succeed:
+  - status code: 200 OK
+  - response body: JSON with entries
+failed:
+  - status code: 400, 404, 500
+  - response body: JSON with error + time
+*/
+
+func (h *HTTPHandlers) GetEntriesByHandler(w http.ResponseWriter, r *http.Request) {
 	var updateEntryDTO UpdateEntryDTO
 
 	if err := json.NewDecoder(r.Body).Decode(&updateEntryDTO); err != nil {
