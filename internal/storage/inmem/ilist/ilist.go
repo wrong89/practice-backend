@@ -33,7 +33,7 @@ func (l *List[V]) GetDataByID(id int) (*V, error) {
 	if id < 0 {
 		return nil, ErrInvalidID
 	}
-	if id > len(l.list) {
+	if id >= len(l.list) {
 		return nil, ErrDataNotFound
 	}
 	return &l.list[id], nil

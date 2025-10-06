@@ -49,6 +49,7 @@ func (h *HTTPServer) configureRouter() http.Handler {
 
 		r.Post("/user/register", h.httpHandlers.RegisterHandler)
 		r.Post("/user/login", h.httpHandlers.LoginHandler)
+		r.Get("/user/{user_id}", h.httpHandlers.UserIsAdminHandler)
 
 		r.With(AuthMiddleware).Post("/entry", h.httpHandlers.CreateEntryHandler)
 		r.With(AuthMiddleware).Get("/entry", h.httpHandlers.GetEntriesHandler)

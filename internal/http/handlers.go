@@ -12,6 +12,9 @@ import (
 	"time"
 )
 
+// todo: implement handler get user by login(pattern: /user/{login})
+// todo: implement handler user is admin(pattern: /user/{login})
+
 type Auth interface {
 	Login(
 		ctx context.Context,
@@ -360,6 +363,46 @@ func (h *HTTPHandlers) GetEntriesByHandler(w http.ResponseWriter, r *http.Reques
 		UserID:        entry.UserID,
 		PaymentMethod: entry.PaymentMethod,
 		Status:        entry.Status,
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp)
+}
+
+/*
+pattern: /user/{user_id}
+method:  GET
+info:    in pattern
+
+succeed:
+  - status code: 200 OK
+  - response body: JSON with isAdmin boolean
+failed:
+  - status code: 400, 404, 500
+  - response body: JSON with error + time
+*/
+
+func (h *HTTPHandlers) UserIsAdminHandler(w http.ResponseWriter, r *http.Request) {
+	userIDStr := r.PathValue("user_id")
+
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		errDTO := NewErrorDTO(err)
+		http.Error(w, errDTO.String(), http.StatusBadRequest)
+		return
+	}
+
+	isAdmin, err := h.authService.IsAdmin(r.Context(), userID)
+	if err != nil {
+		errDTO := NewErrorDTO(err)
+		http.Error(w, errDTO.String(), http.StatusInternalServerError)
+		return
+	}
+
+	resp := struct {
+		IsAdmin bool `json:"is_admin"`
+	}{
+		IsAdmin: isAdmin,
 	}
 
 	w.WriteHeader(http.StatusOK)
