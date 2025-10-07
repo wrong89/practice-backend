@@ -317,13 +317,13 @@ func (h *HTTPHandlers) UpdateEntryHandler(w http.ResponseWriter, r *http.Request
 }
 
 /*
-pattern: /entry/{user_id}
+pattern: /entry/{entry_id}
 method:  GET
 info:    in pattern
 
 succeed:
   - status code: 200 OK
-  - response body: JSON with entries
+  - response body: JSON of updated entry
 failed:
   - status code: 400, 404, 500
   - response body: JSON with error + time

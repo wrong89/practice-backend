@@ -115,15 +115,26 @@ type UpdateEntryDTO struct {
 }
 
 func (u *UpdateEntryDTO) Validate() error {
-	if u.ID <= 0 {
+	if u.ID < 0 {
 		return ErrInvalidOrEmptyID
 	}
-	if !(u.Status == "not processed" || u.Status == "processed") {
+	if !(u.Status == "not processed" || u.Status == "processed" || u.Status == "rejected") {
 		return ErrInvalidStatus
 	}
 
 	return nil
 }
+
+// type GetUserByLoginDTO struct {
+// 	Login string `json:"login"`
+// }
+
+// func (g *GetUserByLoginDTO) Validate() error {
+// 	if g.Login == "" {
+// 		return ErrLoginIsEmpty
+// 	}
+// 	return nil
+// }
 
 type ErrorDTO struct {
 	Message string    `json:"message"`

@@ -53,7 +53,7 @@ func (el *EntryList) UpdateStatusEntry(ctx context.Context, id int, status strin
 	el.mtx.Lock()
 	defer el.mtx.Unlock()
 
-	e.UpdateStatus("processed")
+	e.UpdateStatus(status)
 
 	return el.list.UpdateData(id, e)
 }

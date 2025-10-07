@@ -53,7 +53,8 @@ func (h *HTTPServer) configureRouter() http.Handler {
 
 		r.With(AuthMiddleware).Post("/entry", h.httpHandlers.CreateEntryHandler)
 		r.With(AuthMiddleware).Get("/entry", h.httpHandlers.GetEntriesHandler)
-		r.With(AuthMiddleware).Patch("/entry", h.httpHandlers.UpdateEntryHandler)
+		// r.With(AuthMiddleware).Patch("/entry", h.httpHandlers.UpdateEntryHandler)
+		r.With(AdminMiddleware(h.httpHandlers.authService)).Patch("/entry", h.httpHandlers.UpdateEntryHandler)
 
 		r.With(AdminMiddleware(h.httpHandlers.authService)).Get("/admin", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ADMIN WRITE"))
